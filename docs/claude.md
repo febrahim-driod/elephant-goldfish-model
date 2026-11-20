@@ -141,6 +141,8 @@ Reviewers cannot edit files or run shell commands, and no persistent `memory`
 is configured. The synthesizer adapter declares
 `tools: [Agent, Read, Grep, Glob, Write]` so it can spawn reviewers and write
 reports but cannot run shell commands or use the session's MCP connectors.
+It pins `model: sonnet`: it only dedups and compiles reviewer findings, so it
+does not need the parent session's model.
 A plugin subagent's `tools` field cannot restrict Write to specific paths, and
 Claude Code ignores `hooks` and `permissionMode` in plugin subagents. The
 adapter's rule to write only the requested report or brief is therefore an

@@ -3,7 +3,7 @@ name: egm-synthesizer
 description: Intermediate Swarm Compiler and Aggregator coordinating parallel Goldfish reviewers, deduplicating findings, and compiling deliverable reports.
 license: Apache-2.0
 tools: [Agent, Read, Grep, Glob, Write]
-model: inherit
+model: sonnet
 color: blue
 ---
 

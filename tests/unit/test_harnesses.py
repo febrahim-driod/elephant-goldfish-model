@@ -182,7 +182,7 @@ def test_claude_synthesizer_adapter_is_tool_restricted() -> None:
   adapter = ROOT / ".claude-plugin/agents/synthesizer.md"
   config = frontmatter(adapter)
   assert set(config["tools"]) == {"Agent", "Read", "Grep", "Glob", "Write"}
-  assert config["model"] == "inherit"
+  assert config["model"] == "sonnet"
   assert "memory" not in config
   text = " ".join(adapter.read_text(encoding="utf-8").split())
   assert "${CLAUDE_PLUGIN_ROOT}/agents/synthesizer.md" in text
@@ -250,6 +250,7 @@ def test_bundled_prompt_dependencies_and_harness_guides() -> None:
   assert (ROOT / "docs/claude.md").is_file()
   assert (ROOT / "docs/codex.md").is_file()
   assert (ROOT / "docs/muse.md").is_file()
+  assert (ROOT / "docs/grok.md").is_file()
   skills = list((ROOT / "skills").glob("*/SKILL.md"))
   for skill in skills:
     text = skill.read_text(encoding="utf-8")

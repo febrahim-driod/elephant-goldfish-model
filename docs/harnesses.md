@@ -20,6 +20,7 @@ text.
 | ChatGPT workspace import | Admin > Plugins > Add > Import marketplace, repo URL `https://github.com/google/elephant-goldfish-model`, path `.agents/plugins`; cloud review limits still apply |
 | omp | `omp plugin marketplace add google/elephant-goldfish-model && omp plugin install egm@egm` |
 | Muse | `git clone https://github.com/google/elephant-goldfish-model.git && muse plugins install ./elephant-goldfish-model --scope user && muse plugins approve egm` |
+| Grok Build | `grok plugin marketplace add google/elephant-goldfish-model && grok plugin install egm --trust` |
 
 Install the whole plugin. Skill-only installers that copy `skills/` alone
 break EGM, because the skills read `agents/` and
@@ -73,6 +74,7 @@ while `agents/` contains reviewer personas. All hosts share the same `skills/`,
 | ChatGPT | `plugin.json`, `.codex-plugin/plugin.json`; `.agents/plugins/marketplace.json` for workspace import | `skills` path | Detect native tools in the current session; general-purpose agent reads the persona |
 | omp | `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json` (Claude-compatible fallback) | `skills/` (default) | Personas from `agents/`/`.claude-plugin/agents/` register as native `task` agents |
 | Muse | `.claude-plugin/plugin.json` (Claude-compatible fallback) | `skills/` (default) | 10 adapters import as agents; tool projections unsupported |
+| Grok Build | Root `plugin.json`; `.grok-plugin/marketplace.json` | `skills/` (default) | `agents/` (default); spawn type `egm:<frontmatter-name>` |
 
 Persona prompts live in `agents/`, the directory Antigravity
 scans for subagents. Each persona has `name` and `description` frontmatter, so
@@ -99,6 +101,7 @@ phrase to its own tool:
 | ChatGPT | Native spawn/wait tools when exposed by the current Work session | No | Detect at runtime; direct dispatch fallback |
 | omp | `task` tool | Yes | Yes |
 | Muse | Native subagents; inspect the available schema | Named spawn rejected in 1.4.14; general-purpose fallback verified | Detect at runtime; direct dispatch fallback |
+| Grok Build | `spawn_subagent` | Not verified with snake_case filenames; omit `subagent_type` for the general-purpose fallback | Unreliable; direct-dispatch the reviewers |
 
 Where a harness has no named persona, the skill spawns a general-purpose
 subagent and tells it to read `agents/<file>.md` first. If a harness cannot
@@ -163,6 +166,8 @@ control is verified here for Codex or Antigravity.
 **omp** ([#186](https://github.com/google/elephant-goldfish-model/issues/186)) has a working installation path. Skills are invoked as `/skill:egm-<command>` (omp registers one command per skill; it has no `/egm-*` namespace). Community-verified on omp v18.12.6: all seven skills discover and resolve, and all nine reviewer personas register as subagents. End-to-end workflow fixtures are not yet automated for omp.
 
 **Muse** (1.4.14) has a working installation path. `muse plugins validate` reports the plugin valid with all seven skills and all ten agent adapters supported; every agent tool projection is unsupported, so Claude tool allowlists do not restrict Muse reviewers. Install from a local path; `marketplace add` on this repository discovers zero plugins because Muse reads the Codex catalog first. End-to-end workflow fixtures passed on 2026-10-30 (brainstorm, draft, and uninterrupted review with 15 fresh-context reviewers); named `egm/egm-*` agents cannot be spawned in this runtime, so reviewers used the general-purpose fallback reading the installed persona first. See the [Muse guide](https://github.com/google/elephant-goldfish-model/blob/main/docs/muse.md). No skill routes a Muse session to that guide yet ([#252](https://github.com/google/elephant-goldfish-model/issues/252)), so point the session at it.
+
+**Grok Build** installs through `grok plugin install --trust`. On 1.0.70 a named reviewer spawned only when its file was `agents/<frontmatter-name>.md`; with this repository's snake_case filenames, named spawn on 1.0.77 is not verified. The personas set no Grok isolation frontmatter, so Grok does not enforce read-only reviewers. End-to-end `/egm-brainstorm`, `/egm-draft`, and `/egm-review` runs have not been recorded. See [Grok integration](grok.md). No skill routes a Grok session to that guide, so point the session at it.
 
 **Windsurf** (renamed Devin Desktop on 2026-06-02; [#376](https://github.com/google/elephant-goldfish-model/issues/376)) has experimental workspace routing. The rule and workflow files resolve the shared `skills/*/SKILL.md`, `agents/*.md`, and `resources/document_standards/*.md` files directly. They do not copy skill text. Goldfish reviews stop if fresh-context, read-only subagent delegation is unavailable, and reviewers launch on the host's read-only subagent profile. Devin CLI 3000.12.43 runs on 2026-11-10 passed routing, human pauses, read-only reviewers, and parent-marker isolation with every file write denied, so no workflow ran to a final artifact. Devin Desktop and the Devin CLI run the same agent, Devin Local, which replaced Cascade. The Devin Desktop IDE remains untested. The CLI does not list `.windsurf/workflows/` as slash commands; `/egm-*` requests route through the rule. Denying a permission prompt ends the host's turn without a message; send a follow-up message to continue. See the [design](https://github.com/google/elephant-goldfish-model/blob/main/docs/designs/windsurf_support.md#recorded-cli-evidence-2026-11-10) for the evidence.
 
